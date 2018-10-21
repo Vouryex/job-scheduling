@@ -204,7 +204,9 @@ def display_processes(processes, order, scheduling):
     print("Order: {}".format(order), end="\n\n")
 
 
-processes = init_processes('process1.txt')
+# filename = 'process1.txt'
+filename = 'process2.txt'
+processes = init_processes(filename)
 fcfs(processes)
 sjf(processes)
 srpt(processes)
