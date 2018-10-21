@@ -33,24 +33,28 @@ def init_processes(filename):
 
 def fcfs(processes):
     time = 0
+    order = []
     processes_fcfs = copy.deepcopy(processes)
     for process in processes_fcfs:
+        order.append(process.label)
         process.waiting_time = time
         time += process.burst_time
         process.turnaround_time = time
-    display_processes(processes_fcfs, "FCFS")
+    display_processes(processes_fcfs, order, "FCFS")
 
 
 def sjf(processes):
     time = 0
+    order = []
     processes_sjf = copy.deepcopy(processes)
     processes_sjf.sort(key=lambda process: process.burst_time)
     for process in processes_sjf:
+        order.append(process.label)
         process.waiting_time = time
         time += process.burst_time
         process.turnaround_time = time
     processes_sjf.sort(key=lambda process: process.label)
-    display_processes(processes_sjf, "SJF")
+    display_processes(processes_sjf, order, "SJF")
 
 
 def get_arrivals(processes):
@@ -85,6 +89,7 @@ def restore_burst_time(processes_srpt_output, processes):
 
 def srpt(processes):
     time = 0
+    order = []
     processes_srpt_output = []
     processes_queue = []
     processes_srpt = copy.deepcopy(processes)
@@ -99,6 +104,7 @@ def srpt(processes):
         if len(processes_srpt) == 0:
             break
 
+        order.append(process_to_execute.label)
         next_arrival = processes_srpt[0]
         if process_to_execute.burst_time <= next_arrival.arrival - time:
             process_to_execute.waiting_time += time - process_to_execute.arrival
@@ -112,6 +118,7 @@ def srpt(processes):
             time = next_arrival.arrival
 
     for process in processes_queue:
+        order.append(process.label)
         process.waiting_time += time - process_to_execute.arrival
         time += process.burst_time
         process.turnaround_time = time
@@ -119,7 +126,7 @@ def srpt(processes):
 
     processes_srpt_output.sort(key=lambda process: process.label)
     processes_srpt_output = restore_burst_time(processes_srpt_output, processes)
-    display_processes(processes_srpt_output, "SRPT")
+    display_processes(processes_srpt_output, order, "SRPT")
 
 
 def best_priority(processes):
@@ -136,18 +143,48 @@ def best_priority(processes):
 
 def priority(processes):
     time = 0
+    order = []
     processes_priority_out = []
     processes_priority = copy.deepcopy(processes)
     processes_priority.sort(key=lambda process: process.priority)
     while len(processes_priority) != 0:
         process = best_priority(processes_priority)
+        order.append(process.label)
         process.waiting_time = time
         time += process.burst_time
         process.turnaround_time = time
         processes_priority.remove(process)
         processes_priority_out.append(process)
     processes_priority_out.sort(key=lambda process: process.label)
-    display_processes(processes_priority_out, "Priority")
+    display_processes(processes_priority_out, order, "Priority")
+
+
+def round_robin(processes, time_slice):
+    time = 0
+    order = []
+    processes_rr = copy.deepcopy(processes)
+    index = 0
+    finished_count = 0
+    while finished_count != len(processes_rr):
+        process = processes_rr[index % len(processes_rr)]
+        if process.burst_time == 0:
+            index += 1
+            continue
+        order.append(process.label)
+        if process.burst_time <= time_slice:
+            process.waiting_time += time
+            time += process.burst_time
+            process.turnaround_time = time
+            process.burst_time = 0
+            finished_count += 1
+        else:
+            process.burst_time -= time_slice
+            process.waiting_time -= time_slice
+            time += time_slice
+        index += 1
+    processes_rr.sort(key=lambda process: process.label)
+    processes_rr = restore_burst_time(processes_rr, processes)
+    display_processes(processes_rr, order, "Round-robin")
 
 
 def awt(processes):
@@ -158,12 +195,13 @@ def att(processes):
     return sum(process.turnaround_time for process in processes) / len(processes)
 
 
-def display_processes(processes, scheduling):
+def display_processes(processes, order, scheduling):
     print(scheduling)
     for process in processes:
         print(process)
     print("Average waiting time: {}".format(awt(processes)))
-    print("Average turnaround time: {}".format(att(processes)), end="\n\n")
+    print("Average turnaround time: {}".format(att(processes)))
+    print("Order: {}".format(order), end="\n\n")
 
 
 processes = init_processes('process1.txt')
@@ -171,3 +209,4 @@ fcfs(processes)
 sjf(processes)
 srpt(processes)
 priority(processes)
+round_robin(processes, 4)
