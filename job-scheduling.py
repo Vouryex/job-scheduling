@@ -107,7 +107,7 @@ def srpt(processes):
         order.append(process_to_execute.label)
         next_arrival = processes_srpt[0]
         if process_to_execute.burst_time <= next_arrival.arrival - time:
-            process_to_execute.waiting_time += time - process_to_execute.arrival
+            process_to_execute.waiting_time += (time - process_to_execute.arrival)
             time += process_to_execute.burst_time
             process_to_execute.turnaround_time = time
             processes_queue.remove(process_to_execute)
@@ -119,7 +119,7 @@ def srpt(processes):
 
     for process in processes_queue:
         order.append(process.label)
-        process.waiting_time += time - process_to_execute.arrival
+        process.waiting_time += time - process.arrival
         time += process.burst_time
         process.turnaround_time = time
         processes_srpt_output.append(process)
@@ -205,10 +205,11 @@ def display_processes(processes, order, scheduling):
 
 
 # filename = 'process1.txt'
-filename = 'process2.txt'
+# filename = 'process2.txt'
+filename = 'process3.txt'
 processes = init_processes(filename)
 fcfs(processes)
 sjf(processes)
 srpt(processes)
 priority(processes)
-round_robin(processes, 4)
+round_robin(processes, 3)
